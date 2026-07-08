@@ -1998,95 +1998,95 @@ Denna ordlista riktar sig till dig som redan har god kunskap om AI och maskininl
 **DataLoader Bottleneck Fix** — Öka num_workers, prefetch_factor, pin_memory=True, persistent_workers; optimize preprocessing. GPU idle waiting for CPU data common bottleneck; NVIDIA DALI for GPU decoding; cache preprocessed data.
 ## Generativ AI & GANs
 
-**Generative AI** — AI-system som skapar nytt innehåll (text, bild, ljud, video, kod, 3D) snarare än enbart klassificerar eller predicerar. Omfattar LLMs, diffusion models, GANs, VAEs och multimodal generators; utmaningar: kvalitet, kontroll, säkerhet, copyright och hallucination.
-**Generative Model** — Modellerar datadistribution P(x) eller conditional P(x|y) för att sample realistic outputs. Training via MLE, adversarial, diffusion eller flow objectives; evaluation med FID, human eval, likelihood (if tractable).
-**Discriminative Model** — Modellerar P(y|x) direkt för klassificering, regression, tagging utan att modellera input distribution. Logistic regression, standard classifiers; cannot generate samples; often pretrain component i generative pipelines (classifier guidance).
-**Generative Adversarial Network** — GAN: generator G och discriminator D i two-player minimax game; G fools D, D distinguishes real/fake. Implicit density model; training instability och mode collapse kända problem; revolutionerade image generation 2014-2018.
-**Generator Network** — G(z; θ_G) mappar latent noise z (ofta N(0,I)) till synthetic data i target domain. Architecture: DCGAN conv, StyleGAN mapping network, transformer for text/image; quality depends on latent space structure och training stability.
-**Discriminator Network** — D(x; θ_D) output scalar probability att x är real vs fake; provides learning signal till G via gradient through D (non-saturating loss). Architecture mirrors G; spectral norm, gradient penalty för Lipschitz constraint i WGAN.
-**Minimax GAN Objective** — min_G max_D V(D,G) = E_{x~p_data}[log D(x)] + E_{z~p_z}[log(1-D(G(z)))]. Nash equilibrium at p_G = p_data; vanishing gradient när D too strong; original GAN formulation.
-**Non-Saturating GAN Loss** — Generator loss -E[log D(G(z))] istället för log(1-D(G(z))); starkare gradient när D(G(z))≈0. Standard G training objective; same equilibrium; avoids saturated gradients early training.
-**Mode Collapse in GAN** — Generator producerar begränsad variation (few modes) trots diverse latent z; D cannot provide gradient för missing modes. Partial collapse common; mitigated by minibatch discrimination, unrolled GAN, diversity penalties.
-**Training Instability in GAN** — Oscillerande losses, D/G domination, non-convergence i adversarial dynamics. No single loss to monitor; hyperparameter sensitive; WGAN-GP, spectral norm, two-timescale update improve stability.
-**Vanishing Gradient in GAN** — När D perfekt: ∇_θ_G loss ≈ 0 eftersom G får ingen useful signal. Occurs when p_G far from p_data and D confident; non-saturating loss, label smoothing, weaker D partially mitigate.
-**Wasserstein GAN** — WGAN: minimize Wasserstein-1 distance via Kantorovich-Rubinstein dual; requires D (critic) 1-Lipschitz. Weight clipping (original) eller gradient penalty; meaningful loss curve (W distance estimate); improved stability.
-**WGAN-GP** — Wasserstein GAN with Gradient Penalty: λ E[(||∇_{x̂} D(x̂)||_2 - 1)²] på interpolerade samples istället för weight clipping. Better Lipschitz enforcement; standard WGAN variant; λ typiskt 10.
-**Spectral Normalization GAN** — Normalisera D weight matrices via spectral norm σ(W) så att Lipschitz constant ≤ 1. Simpler than gradient penalty; SNGAN, BigGAN; stabilizes D without extra forward passes for penalty.
-**Progressive GAN** — Gradvis öka output resolution under träning (4×4 → 1024×1024); stabiliserar high-res GAN training. ProGAN; fade in new layers; enabled photorealistic faces; superseded by StyleGAN but influential.
-**StyleGAN** — Style-based generator: mapping network z→w, AdaIN injection at each layer controls coarse-to-fine styles. Unsupervised disentanglement of pose, identity, background; state-of-art faces 2019-2020; StyleGAN2/3 improvements.
-**StyleGAN2** — Förbättrad arkitektur: weight demodulation, path length regularization, no progressive growing needed. Higher quality, fewer artifacts (droplet); faster training; still widely used for faces och art.
-**StyleGAN3** — Alias-free generator med signal processing principles; bättre equivariance under translation/rotation. Reducerar texture sticking; improved animation och video; higher compute; research into equivariant generation.
-**BigGAN** — Storskalig class-conditional GAN med BigBatch (2048), spectral norm, self-attention, shared class embedding. State-of-art ImageNet conditional generation; class-conditional BatchNorm (CBN); requires significant compute.
-**Conditional GAN** — cGAN: condition G och D på label y (class, text, segmentation map) via concatenation eller projection. Enables controlled generation: class-conditional, text-to-image (StackGAN), pix2pix paired translation.
-**AC-GAN** — Auxiliary Classifier GAN: auxiliary class prediction loss på D för class labels; improves conditional quality. Multi-task D: real/fake + class; stabilizes conditional training; used in labeled image generation.
-**CycleGAN** — Unpaired image-to-image via cycle consistency: G_AB(G_BA(x))≈x utan paired data. Horse↔zebra, style transfer; cycle loss + identity loss; no paired supervision needed; limits when domains very dissimilar.
-**Pix2Pix** — Paired image-to-image med conditional GAN + L1 reconstruction loss; U-Net generator. Semantic segmentation→photo, edges→photo; requires aligned pairs; L1 prevents mode collapse to plausible but wrong outputs.
-**SRGAN** — Super-resolution GAN: upsample low-res med perceptual (VGG feature) loss + adversarial loss. Photo-realistic high-res från low-res; PSNR may be lower than MSE methods but perceptually sharper; basis for video SR.
-**ProGAN** — Progressive growing of GANs (Karras et al.); same as Progressive GAN. Milestone for high-quality face generation; smooth transition between resolutions via fade-in; architectural best practices (PBRS, minibatch std).
-**DCGAN** — Deep Convolutional GAN med riktlinjer: strided conv not pooling, BatchNorm, ReLU/LeakyReLU, careful init. Established conv GAN best practices; latent vector z→reshape→conv transpose stack; foundational architecture.
-**Latent Space Interpolation** — Linjär (eller spherisk) interpolation z1→z2 i latent space ger smooth visual morph i output space. Demonstrates learned representation structure; used in face morphing, style mixing (StyleGAN w space).
-**Latent Vector z** — Input noisevektor till generator, typiskt z ~ N(0,I) i R^d (d=512 StyleGAN). Entangled factors in vanilla GAN; StyleGAN w space mer disentangled; GAN inversion finds z for given image.
-**GAN Inversion** — Hitta latent code z (eller w) som G(z) rekonstruerar given bild x; optimization eller encoder network. Enables editing real images via latent manipulation; ReStyle, e4e encoders for fast inversion.
-**Perceptual Loss** — L2 på feature maps från pretrained network (VGG, ResNet) istället för pixel L2. Captures semantic similarity; SRGAN, neural style transfer; features from relu3_3, relu4_3 common layers.
-**Feature Matching Loss** — Match intermediate D feature statistics (mean) mellan real och fake batches. Stabilizes G training; reduces mode collapse; ||E[f(x)] - E[f(G(z))]||² for D layer f.
-**Historical Averaging GAN** — Regularisera G mot running average av past G parameters; stabilizes training. Penalty ||θ_G - (1/t)Σ θ_G^past||²; reduces oscillation; less common nu med modern stabilizing techniques.
-**Unrolled GAN** — Generator loss includes k steps of D optimization unrolled; anticipates D response. More stable gradients for G; computationally expensive (k extra D steps); research direction for equilibrium-aware training.
-**Self-Attention GAN** — SAGAN: self-attention layers i G och D för long-range dependencies i images. Complements conv local inductive bias; BigGAN uses; attention map visualizes what regions interact during generation.
-**Projection Discriminator** — Class embedding c projiceras på D intermediate features via dot product eller bilinear form. Improved conditional GAN (Projection GAN); stronger than concatenation conditioning; used in BigGAN.
-**R1 Gradient Penalty** — Regularisera D: γ/2 E[||∇_x D(x)||²] på real data only; zero-centered gradient penalty. StyleGAN2 default; stabilizes D without WGAN-GP interpolation; γ typiskt 10.
-**Consistency Regularization GAN** — CR-GAN för semi-supervised: consistency loss på D för augmented unlabeled data. Leverages unlabeled data for better D/G; improves generation quality with limited labels.
-**Energy-Based Model** — EBM: assign low energy E(x) to data, high to other regions; P(x) ∝ exp(-E(x)). Training via contrastive divergence, score matching; unstable but flexible; connects to diffusion/score models.
-**Normalizing Flow** — Invertible transform f: z→x med tractable Jacobian; exact log-likelihood via change of variables. RealNVP, Glow, Flow matching successors; exact density but architectural constraints (bijectivity, dim preservation).
-**RealNVP** — Affine coupling layers: split x, transform half conditioned on other; triangular Jacobian ⇒ efficient log-det. Multi-scale architecture; foundation for Glow; enables exact likelihood and sampling both directions.
-**Glow** — Flow model: 1×1 invertible conv + affine coupling + actnorm; efficient parallel computation. Kingma & Dhariwal; high-quality image generation with exact likelihood; superseded by diffusion for quality but influential.
-**Variational Autoencoder** — VAE: encoder q(z|x), decoder p(x|z), maximize ELBO = E[log p(x|z)] - KL(q||p(z)). Generative med latent bottleneck; blurry samples (Gaussian decoder); foundation for VQ-VAE, diffusion latents.
-**Reparameterization Trick** — z = μ + σ⊙ε, ε~N(0,I) för backprop genom stochastic sampling node. Enables gradient-based VAE training; generalizes to other continuous reparameterizable distributions (Gumbel-softmax for discrete).
-**KL Divergence in VAE** — KL(q(z|x)||p(z)) regulariserar latent mot prior N(0,I); prevents posterior collapse. β-VAE increases weight for disentanglement; KL annealing avoids early collapse during training.
-**β-VAE** — Viktad KL: ELBO med β·KL, β>1 för disentangled representations. Trades reconstruction quality for factorized latents; Higgins et al.; used in representation learning research; not always better for generation quality.
-**Vector Quantized VAE** — VQ-VAE: discrete latent codes via vector quantization med learned codebook; avoids posterior collapse. Enables autoregressive prior over codes (VQ-VAE-2, DALL-E stage 1); foundation for discrete image tokens.
-**Codebook in VQ-VAE** — Learned embedding table {e_k}_{k=1}^K; encoder output quantized to nearest code. Commitment loss och codebook loss; straight-through estimator for gradients; codebook collapse requires careful training.
-**Autoregressive Generative Model** — Factorize P(x) = Π P(x_i|x_{<i}); sequential sampling. PixelCNN, WaveNet, GPT; tractable likelihood; slow sequential generation; dominant for text; parallelized via caching (KV cache).
-**PixelCNN** — Autoregressiv bildgenerering pixel för pixel med masked conv för causality. Exact likelihood; very slow sampling; Gated PixelCNN improves quality; largely superseded by diffusion/VAE latents for images.
-**WaveNet** — Autoregressiv råvågformsgenerering med dilated causal conv; receptive field exponential i layers. High-quality TTS (pre-neural vocoder era); slow inference; inspired WaveNet→Parallel WaveNet, diffusion audio.
-**Transformer LM as Generator** — GPT-style autoregressive transformer genererar text token för token. Scaling laws drive capability; temperature, top-p sampling control diversity; foundation of modern generative AI for language.
-**Diffusion as Generative Model** — Forward noise process + learned reverse denoising; alternative till GAN/VAE utan adversarial training. DDPM, score-based; state-of-art image/audio/video; iterative sampling (many steps) men high quality.
-**Flow Matching Generative** — Continuous normalizing flows via flow matching objective utan ODE simulation during training. Rectified flow, Stable Diffusion 3; simpler training than score matching; connects diffusion och flows.
-**Consistency Model Generation** — Few-step generering genom consistency distillation från diffusion teacher; single eller few-step sampling. CM, LCM (Latent Consistency Models); trades quality for speed; important for real-time applications.
-**Score-Based Generative Model** — Lär score function ∇_x log p(x) (noise-conditional) för sampling via Langevin dynamics eller SDE. Song et al.; unifies diffusion och energy-based models; probability flow ODE for deterministic sampling.
-**Implicit Generative Model** — Sample without tractable density: GAN (sample via G(z)), implicit diffusion sampling. Cannot compute likelihood directly; evaluate via sample quality metrics (FID, IS) och human eval.
-**Explicit Likelihood Model** — Tractable P(x): autoregressive, normalizing flows, VAE (ELBO). Enables likelihood-based model selection, compression, anomaly detection; may sacrifice sample quality vs GAN/diffusion.
-**Evaluating Generative Models** — FID, IS, precision/recall, LPIPS, human A/B, CLIP score; no single perfect metric. Sample quality vs diversity tradeoff; metric gaming possible; human eval gold standard but expensive.
-**Precision and Recall for GANs** — Decompose generation quality: precision (realistic samples) vs recall (covers full data modes). Kynkäänniemi et al.; detects mode collapse (high precision, low recall); uses k-NN i feature space.
-**Fréchet Inception Distance** — FID: Fréchet distance mellan Gaussians fit to Inception-v3 features of real vs generated. Lower better; sensitive to sample size; standard image generation metric; not perfect correlation with human judgment.
-**Inception Score** — IS: exp(E[KL(p(y|x)||p(y))]); measures classifiability och diversity of generated images. Higher better; uses Inception classifier; biased toward ImageNet classes; largely replaced by FID.
-**Kernel Inception Distance** — KID: MMD med polynomial kernel i Inception features; unbiased estimator vs FID. Better for small sample sizes; used as FID complement; same Inception backbone limitations.
-**Neural Audio Codec** — EnCodec, DAC: neural compression av ljud till discrete tokens vid låg bitrate för generative modeling. Enables audio LM (AudioLM, MusicGen); residual vector quantization; replaces mel-spectrogram pipelines.
-**Neural Vocoder** — Genererar waveform från mel-spectrogram eller acoustic features: WaveGlow, HiFi-GAN, BigVGAN. Real-time TTS synthesis; GAN or flow-based; bridges acoustic model och audible output.
-**HiFi-GAN** — High-fidelity GAN vocoder med multi-receptive field fusion generator och multi-period/multi-scale D. Standard TTS vocoder; real-time capable; adversarial + feature matching losses on mel reconstruction.
-**Mel Spectrogram** — Tids-frekvensrepresentation: mel-scaled log-power spectrogram; standard audio feature för TTS/ASR. 80 mel bins typical; phase discarded (vocoder reconstructs); STFT-based preprocessing.
-**Text-to-Music Generation** — Generera musik från text prompt eller strukturerad spec (genre, tempo, chords). MusicGen, Suno, Udio; audio tokens or spectrogram diffusion; copyright och attribution concerns; long-form structure challenging.
-**Text-to-Video Generation** — Diffusion/transformer genererar videosekvenser från text (Sora, Runway, Pika). Temporal consistency, physics plausibility open problems; compute intensive; often image model + temporal layers or 3D conv.
-**Video GAN** — Generera video frames med temporal consistency via 3D conv, recurrent state eller two-stream (MoCoGAN). Early approach; temporal flickering common; largely superseded by video diffusion models.
-**3D Generative Model** — Generera 3D assets: meshes, NeRF, 3D Gaussians, point clouds från text/image. DreamFusion, Point-E, Shap-E; evaluation harder than 2D; important for gaming, AR, robotics simulation.
-**DreamFusion** — Text-to-3D via 2D diffusion distillation (Score Distillation Sampling) + NeRF optimization. Optimize NeRF så rendered views match diffusion model scores; no 3D training data needed; multi-view consistency challenges.
-**Generative Fill** — Inpainting/outpainting i bildredigering: fyll maskerade/extended region med coherent content. Adobe Firefly, Stable Diffusion inpainting; conditioned on mask och surrounding context; used in creative workflows.
-**ControlNet for Generation** — Inject spatial control (edges, depth, pose, segmentation) into frozen diffusion model via trainable side network. Enables precise layout control utan full retrain; widely used in Stable Diffusion ecosystem.
-**LoRA for Style Generation** — Low-rank adaptation för personlig stil/koncept utan full model retrain; small trainable matrices. DreamBooth+LoRA for custom subjects/styles; efficient fine-tuning; merges into base model for inference.
-**Prompt Engineering for T2I** — Formulera effektiva text prompts för text-to-image: descriptive, weighted tokens, style references. Quality och composition strongly prompt-dependent; prompt libraries och automatic prompt expansion tools.
-**Negative Prompt Engineering** — Specificera oönskade element i negative prompt (ugly, blurry, watermark) för att suppress dem via CFG. Standard i Stable Diffusion pipelines; reduces common failure modes; requires experimentation per model.
-**Seed Control in Generation** — Fix random seed för noise/latent initialization ⇒ reproducerbara outputs given same model/prompt/settings. Essential for iterative refinement; same seed + prompt ≠ identical across different samplers/steps.
-**Batch Generation** — Generera många samples parallellt med shared model forward; throughput optimization. Used for dataset creation, hyperparameter search, A/B comparison; GPU memory limits batch size.
-**Classifier Guidance** — Under diffusion sampling: adjust score med ∇_x log p(y|x) från classifier för class-conditional generation. Dhariwal & Nichol; strong conditioning; requires separate classifier; superseded by CFG in practice.
-**CFG in Diffusion** — Classifier-Free Guidance: train conditional och unconditional model jointly; guide via (1+w)ε_cond - w·ε_uncond. No separate classifier; w (guidance scale) controls prompt adherence vs diversity; w=7-12 typical for SD.
-**Generative Model Safety** — NSFW filter, content moderation, watermarking (SynthID), C2PA metadata i generativ pipeline. Prevent misuse; imperfect filters; red teaming generative systems; policy layers post-generation.
-**Synthetic Data Generation** — Generera träningsdata med generativa modeller för augmentation, privacy, rare classes. ProGAN faces for privacy research; LLM synthetic instruction data; quality filtering essential; model collapse risk.
-**Data Augmentation via Generation** — GAN/diffusion skapar extra träningsexempel (transformed, styled, rare scenarios). Improves robustness when real data scarce; domain gap between synthetic och real must be managed.
-**Privacy-Preserving Generation** — Synthetic data som bevarar statistiska properties utan att memorerar PII (differential privacy + generative models). GDPR-compliant analytics; membership inference tests validate privacy; utility-privacy tradeoff.
-**Membership Inference on Generative Models** — Attack avgör om specifik sample var i träningsdata baserat på model output/confidence. Privacy risk för generative models; mitigated by differential privacy training och deduplication; audit tool for data leakage.
-**Model Collapse from Synthetic Data** — Träna på AI-genererad data iterativt degraderar frånvaro av diversity ( tails disappear). "Habsburg AI" phenomenon; mix real och synthetic data mitigates; active research on sustainable synthetic data loops.
-**Human Evaluation of Generative Output** — A/B preference tests, Elo ratings, Likert scales för perceptuell kvalitet, realism, alignment. Gold standard men expensive och subjective; inter-annotator agreement matters; necessary for publication-quality claims.
-**Turing Test for Generative AI** — Kan AI-genererat innehåll skiljas från mänskligt av evaluators? Text (ChatGPT), images (ThisPersonDoesNotExist), audio; imperfect benchmark; passing doesn't imply understanding or safety.
-**Creative AI Applications** — Konst, design, musik, game assets, fashion med generativa modeller som co-creative tools. Midjourney, DALL-E, Suno; workflow integration (Photoshop, Figma plugins); debates on artist displacement och copyright.
-**Generative AI Copyright** — Vem äger AI-genererat verk? Träningsdata fair use? US Copyright Office: human authorship required; EU AI Act transparency; ongoing litigation (NYT vs OpenAI); unsettled legal landscape affecting industry.
+**Generative AI** — AI som skapar nytt innehåll som text, bild, ljud, video och kod. Omfattar LLM:er, diffusion, GAN:er och VAE:er.
+**Generative Model** — Modellerar datadistribution P(x) eller villkorad P(x|y) för sampling av realistiska utdata. Tränas via MLE, adversarial-, diffusions- eller flow-mål.
+**Discriminative Model** — Modellerar P(y|x) direkt för klassificering och regression utan att modellera indatafördelningen. Kan inte generera samples men används i generativa pipeliner.
+**Generative Adversarial Network** — GAN: generator G och diskriminator D i minimax-spel där G försöker lura D. Implicit densitetsmodell med instabilitet och mode collapse.
+**Generator Network** — G(z) mappar latent brus z till syntetiska samples i måldomänen. Arkitekturen varierar från DCGAN till StyleGAN mapping network.
+**Discriminator Network** — D(x) skiljer äkta från falska samples och ger lärgradient till G. Spektralnorm och gradientstraff stabiliserar träningen.
+**Minimax GAN Objective** — min_G max_D V(D,G) = E[log D(x)] + E[log(1-D(G(z)))]. Nash-jämvikt vid p_G = p_data; gradient försvinner om D blir för stark.
+**Non-Saturating GAN Loss** — Generatorförlust -log D(G(z)) ger starkare gradient än log(1-D(G(z))) när D(G(z))≈0. Standardmål för G-träning.
+**Mode Collapse in GAN** — Generatorn producerar begränsad variation trots divers latent z. D kan inte ge gradient för saknade modeller i datadistributionen.
+**Training Instability in GAN** — Oscillerande förluster och dominans av D eller G gör träningen instabil. WGAN-GP och spektralnorm förbättrar konvergens.
+**Vanishing Gradient in GAN** — När D blir för stark får G ingen användbar gradient eftersom förlusten mättas ut. Icke-mättnad förlust mildrar problemet.
+**Wasserstein GAN** — WGAN minimerar Wasserstein-1-avstånd via dualitet och kräver 1-Lipschitz-kritiker. Viktclippning eller gradientstraff ger stabilare träning.
+**WGAN-GP** — Gradientstraff λE[(||∇D(x̂)||₂-1)²] ersätter viktclippning för Lipschitz-tvång. Standard-WGAN-variant med λ typiskt 10.
+**Spectral Normalization GAN** — Normaliserar D:s viktmatriser via spektralnorm så Lipschitz-konstanten ≤ 1. Enklare än gradientstraff; används i SNGAN och BigGAN.
+**Progressive GAN** — Upplösningen ökas gradvis under träning med fade-in av nya lager. Stabiliserar högupplöst GAN-träning och fotorealistiska ansikten.
+**StyleGAN** — Stylebaserad generator med mapping network z→w och AdaIN per lager. Oövervakad stilkontroll av pose, identitet och bakgrund.
+**StyleGAN2** — Förbättrad arkitektur med weight demodulation och path length regularization. Högre kvalitet och färre artefakter än StyleGAN.
+**StyleGAN3** — Alias-fri generator med bättre ekvivarians vid translation och rotation. Minskar texture sticking och förbättrar animation.
+**BigGAN** — Storskalig klassvillkorad GAN med BigBatch, spektralnorm och self-attention. State-of-the-art på ImageNet men kräver stor beräkning.
+**Conditional GAN** — cGAN villkorar G och D på label y via konkatenering eller projektion. Möjliggör kontrollerad generering och text-till-bild.
+**AC-GAN** — Auxiliär klassificeringsförlust på D utöver äkta/falsk-diskriminering. Stabiliserar villkorad träning och förbättrar klasskvalitet.
+**CycleGAN** — Obepaarat bild-till-bild via cykelkonsistens G_AB(G_BA(x))≈x utan parvisa data. Används för stilöverföring som häst↔zebra.
+**Pix2Pix** — Bepaarat bild-till-bild med villkorad GAN och L1-rekonstruktionsförlust. Kräver justerade par; L1 förhindrar felaktiga utdata.
+**SRGAN** — Super-upplösnings-GAN med perceptuell VGG-förlust och adversarial förlust. Perceptuellt skarpare än rena MSE-metoder.
+**ProGAN** — Progressiv uppväxling med fade-in mellan upplösningar för högkvalitativa ansikten. Milstolpe som influerade StyleGAN-arkitekturen.
+**DCGAN** — Djup convolutionell GAN med riktlinjer: strided conv, BatchNorm och försiktig initiering. Etablerade conv-GAN-bästa praxis.
+**Latent Space Interpolation** — Linjär interpolation z1→z2 i latent space ger mjuka visuella morfer. Används i ansiktsmorfing och StyleGAN w-mixning.
+**Latent Vector z** — Brusvektor z ~ N(0,I) som input till generatorn, typiskt d=512 i StyleGAN. GAN-inversion hittar z som rekonstruerar en given bild.
+**GAN Inversion** — Hitta latent kod z eller w så G(z) rekonstruerar given bild via optimering eller encoder. Möjliggör redigering av riktiga bilder.
+**Perceptual Loss** — L2 på feature maps från förtränat nätverk (VGG) istället för pixel-L2. Fångar semantisk likhet i SRGAN och style transfer.
+**Feature Matching Loss** — Matchar medelvärdet av intermediära D-features mellan äkta och falska batcher. Stabiliserar G-träning och minskar mode collapse.
+**Historical Averaging GAN** — Regulariserar G mot löpande medelvärde av tidigare G-parametrar. Minskar oscillation men är mindre vanligt idag.
+**Unrolled GAN** — Generatorförlust inkluderar k steg D-optimering unrollade för att förutse D:s svar. Stabilare G-gradienter men dyrare beräkningsmässigt.
+**Self-Attention GAN** — SAGAN: self-attention i G och D för långväga beroenden i bilder. BigGAN använder attention för global struktur.
+**Projection Discriminator** — Klassembedding projiceras på D:s features via skalarprodukt. Starkare villkorning än konkatenering; används i BigGAN.
+**R1 Gradient Penalty** — Regulariserar D med γ/2 E[||∇_x D(x)||²] endast på äkta data. Standard i StyleGAN2 med γ typiskt 10.
+**Consistency Regularization GAN** — CR-GAN: konsistensförlust på D för augmenterade omarkerade data. Semi-overvakad träning med få etiketter.
+**Energy-Based Model** — EBM tilldelar låg energi till data och hög till andra regioner; P(x) ∝ exp(-E(x)). Kopplar till diffusions- och scoremodeller.
+**Normalizing Flow** — Invertibel transform med traktabel Jacobian och exakt log-likelihood via variabelbyte. RealNVP och Glow ger exakt densitet.
+**RealNVP** — Affina coupling-lager transformerar hälften av x villkorat på resten med effektiv log-det. Grund för Glow-modellen.
+**Glow** — Flow-modell med 1×1 inverterbar conv och affina coupling-lager. Exakt likelihood och effektiv parallell bildgenerering.
+**Variational Autoencoder** — VAE: encoder q(z|x), decoder p(x|z), maximerar ELBO. Generativ med latent flaskhals; samples kan bli suddiga.
+**Reparameterization Trick** — z = μ + σ⊙ε, ε~N(0,I) möjliggör backprop genom stokastisk sampling. Grundläggande för gradientbaserad VAE-träning.
+**KL Divergence in VAE** — KL(q(z|x)||p(z)) regulariserar latent mot prior N(0,I) och motverkar posterior collapse. β-VAE och KL-annealing styr vikten.
+**β-VAE** — ELBO med viktad KL β·KL, β>1 för disentanglade representationer. Byter rekonstruktionskvalitet mot faktoriserade latenter.
+**Vector Quantized VAE** — VQ-VAE: diskreta latenta koder via vektorquantisering med inlärd codebook. Grund för autoregressiv prior (DALL-E steg 1).
+**Codebook in VQ-VAE** — Inlärd embedding-tabell; encoder-utdata quantiseras till närmaste kod. Commitment loss och straight-through-estimator.
+**Autoregressive Generative Model** — Faktoriserar P(x) = Π P(x_i|x_{<i}) med sekventiell sampling. Traktabel likelihood men långsam generering.
+**PixelCNN** — Autoregressiv bildgenerering pixel för pixel med maskerade conv-lager. Exakt likelihood men mycket långsam sampling.
+**WaveNet** — Autoregressiv råvågformsgenerering med dilated causal conv. Högkvalitativ TTS före neural vocoders; långsam inferens.
+**Transformer LM as Generator** — GPT-liknande transformer genererar text token för token autoregressivt. Temperatur och top-p styr diversitet.
+**Diffusion as Generative Model** — Framåt brusprocess plus inlärnd omvänt denoising utan adversarial träning. State-of-the-art för bild, ljud och video.
+**Flow Matching Generative** — Kontinuerliga normaliserande flöden via flow matching utan ODE-simulering under träning. Enklare träning än score matching.
+**Consistency Model Generation** — Fåstegsgenerering via consistency distillation från diffusion-lärare. Byter kvalitet mot hastighet för realtidsapplikationer.
+**Score-Based Generative Model** — Lär brusvillkorad score function ∇_x log p(x) för sampling via Langevin-dynamik eller SDE. Förenar diffusion och EBM.
+**Implicit Generative Model** — Sample utan traktabel densitet, t.ex. GAN via G(z). Utvärderas via FID, IS och mänsklig utvärdering, inte likelihood.
+**Explicit Likelihood Model** — Traktabel P(x): autoregressiva modeller, normaliserande flöden och VAE (ELBO). Möjliggör likelihood-baserat modellval.
+**Evaluating Generative Models** — FID, IS, precision/recall och mänsklig A/B; inget perfekt enskilt mått. Avvägning mellan kvalitet och diversitet.
+**Precision and Recall for GANs** — Precision mäter realistiska samples; recall täcker data-modeller. Detekterar mode collapse via k-NN i feature space.
+**Fréchet Inception Distance** — FID: Fréchet-avstånd mellan Gaussiska passningar till Inception-v3-features. Lägre är bättre; standardmått för bildgenerering.
+**Inception Score** — IS mäter klassificerbarhet och diversitet hos genererade bilder via Inception-klassificerare. Högre är bättre; largt ersatt av FID.
+**Kernel Inception Distance** — KID: MMD med polynomkernel i Inception-features; opartisk estimator jämfört med FID. Bättre för små sample-storlekar.
+**Neural Audio Codec** — EnCodec/DAC komprimerar ljud till diskreta tokens vid låg bitrate. Möjliggör ljud-LM som AudioLM och MusicGen.
+**Neural Vocoder** — Genererar vågform från mel-spektrogram: WaveGlow, HiFi-GAN, BigVGAN. Bro mellan akustisk modell och hörbar output.
+**HiFi-GAN** — Högkvalitativ GAN-vocoder med multi-receptive field fusion och multi-scale D. Standard TTS-vocoder; realtidsbar.
+**Mel Spectrogram** — Mel-skalerat log-power-spektrogram; standardfeature för TTS och ASR. Typiskt 80 mel-bins; vocoder rekonstruerar vågform.
+**Text-to-Music Generation** — Generera musik från textprompt eller strukturerad spec (genre, tempo). MusicGen och Suno; långformstruktur utmanande.
+**Text-to-Video Generation** — Diffusion/transformer genererar videosekvenser från text. Temporal konsistens och fysikplausibilitet är öppna problem.
+**Video GAN** — Generera videobilder med temporal konsistens via 3D-conv eller rekurrent tillstånd. Largt ersatt av video-diffusion.
+**3D Generative Model** — Generera meshes, NeRF eller 3D Gaussians från text eller bild. Viktigt för spel, AR och robottillämpningar.
+**DreamFusion** — Text-till-3D via 2D diffusion-distillation och NeRF-optimering. Renderade vyer matchar diffusion-modellens scores utan 3D-data.
+**Generative Fill** — Inpainting/outpainting: fyll maskerade regioner med sammanhängande innehåll. Villkoras på mask och omgivande kontext.
+**ControlNet for Generation** — Injicerar spatial kontroll (kanter, djup, pose) i frusen diffusion via sidonätverk. Vanligt i Stable Diffusion.
+**LoRA for Style Generation** — Low-rank adaptation för personlig stil utan full omträning. DreamBooth+LoRA för anpassade motiv; effektiv finjustering.
+**Prompt Engineering for T2I** — Formulera effektiva textprompter för text-till-bild med beskrivande tokens och stilreferenser. Kvalitet är promptberoende.
+**Negative Prompt Engineering** — Specificera oönskade element i negativ prompt för att undertrycka dem via CFG. Minskar vanliga fellägen i Stable Diffusion.
+**Seed Control in Generation** — Fixera slumpseed ger reproducerbara utdata givet samma modell och prompt. Viktigt för iterativ förfining.
+**Batch Generation** — Generera många samples parallellt med delad modell-forward. Används för dataset och A/B-jämförelse; GPU-minne begränsar batch.
+**Classifier Guidance** — Justera diffusion score med ∇_x log p(y|x) från klassificerare för villkorad generering. Ersatt av CFG i praktiken.
+**CFG in Diffusion** — Classifier-Free Guidance: guida via (1+w)ε_cond - w·ε_uncond utan separat klassificerare. w styr promptlojalitet vs diversitet.
+**Generative Model Safety** — NSFW-filter, vattenmärkning och C2PA-metadata i generativ pipeline. Förhindrar missbruk men filter är ofullkomliga.
+**Synthetic Data Generation** — Generera träningsdata med generativa modeller för augmentation och integritet. Kvalitetsfiltrering essentiell; risk för model collapse.
+**Data Augmentation via Generation** — GAN/diffusion skapar extra träningsexempel för sällsynta scenarier. Domängap mellan syntetisk och riktig data måste hanteras.
+**Privacy-Preserving Generation** — Syntetisk data bevarar statistik utan att memorera PII. Differential privacy och medlemsinferens validerar integritet.
+**Membership Inference on Generative Models** — Attack avgör om sample fanns i träningsdata baserat på modellutdata. Integritetsrisk; mildras av differential privacy.
+**Model Collapse from Synthetic Data** — Iterativ träning på AI-genererad data degraderar diversitet när svansar försvinner. Blandning av riktig och syntetisk data hjälper.
+**Human Evaluation of Generative Output** — A/B-preferenstester, Elo och Likert-skala för perceptuell kvalitet. Guldstandard men dyr och subjektiv.
+**Turing Test for Generative AI** — Kan AI-genererat innehåll skiljas från mänskligt av utvärderare? Ofullkomligt benchmark; klara testet ≠ förståelse.
+**Creative AI Applications** — Konst, design, musik och speltillgångar med generativa modeller som medskapande verktyg. Debatter om upphovsrätt.
+**Generative AI Copyright** — Vem äger AI-genererat verk och fair use av träningsdata? EU AI Act och pågående rättsprocesser påverkar branschen.
 
 Total terms: 2000
