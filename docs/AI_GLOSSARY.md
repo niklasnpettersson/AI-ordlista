@@ -882,7 +882,7 @@ Denna ordlista riktar sig till dig som redan har god kunskap om AI och maskininl
 **Color Space in Vision Models** — RGB vs YUV och normaliseringskonventioner påverkar pretrained features; mismatch vid deployment ger prestandaförlust.
 **Multimodal Latency** — Vision encoder plus LLM decode; encoder och projektion är ofta flaskhals innan autoregressiv textgenerering startar.
 **Visual Grounding** — Kopplar naturligt språk till specifika bildregioner via boxar, masker eller pekning för explainability och robot manipulation.
-**Audio-Visual Speech Recognition** — Kombinerar lip-read video och ljud för robustare taligenkänning i brus via fusion i shared latent space.
+**Audio-Visual Speech Recognition** — Kombinerar lip-read video och ljud för robustare taligenkänning i brus via fusion i delat latent rum. Särskilt användbart när ljudkvaliteten är dålig men ansiktsrörelser ger extra signal om talinnehållet.
 
 ## Diffusionsmodeller
 
@@ -942,13 +942,13 @@ Denna ordlista riktar sig till dig som redan har god kunskap om AI och maskininl
 **Min-SNR Weighting** — Viktning av loss baserat på SNR för balanserad träning över tidssteg och undvikande av dominerande höga noise levels.
 **EMA Weights** — Exponential moving average av modellvikter för stabilare sampling och bättre generativ kvalitet vid inferens än raw weights.
 **Diffusion Training Steps** — Antal tidssteg T under träning; kan skilja från inference steg när avancerade samplers subsamplar tidsaxeln.
-**Inference Step Count** — Färre steg än träning via avancerade samplers; central tradeoff mellan kvalitet, latens och compute per bild.
+**Inference Step Count** — Färre steg än träning via avancerade samplers; central avvägning mellan kvalitet, latens och compute per bild. DDIM och distillation kan ge 10–50× snabbare sampling med acceptabel kvalitetsförlust beroende på modell och uppgift.
 **Mode Collapse in Diffusion** — Sällsynt men möjlig via dålig guidance, begränsad data diversity eller överstyrning som minskar output-variation.
-**Exposure Bias in Diffusion** — Mindre relevant än autoregressiv generering; men schedule, sampler och VAE kan ändå ge systematiska artefakter.
+**Exposure Bias in Diffusion** — Mindre relevant än autoregressiv generering; men schedule, sampler och VAE kan ändå ge systematiska artefakter. Fel i brusplan eller latenta avkodning kan ackumuleras över flera denoising-steg och synas som blur eller färgavvikelser.
 **Safety Filter for Diffusion** — NSFW-klassificerare och policyfilter på prompt och output för att blockera olämpligt genererat innehåll.
 **Watermarking Generated Images** — Osynlig vattenmärkning i diffusion outputs för spårbarhet och detektion av AI-genererat media.
 **Causal Diffusion for Video** — Kausala temporal constraints för streaming video-gen utan access till framtida frames vid generering.
-**Conditional Dropout** — Slumpmässigt droppar conditioning under träning för CFG-kompatibilitet och robust unconditional branch.
+**Conditional Dropout** — Slumpmässigt droppar conditioning under träning för CFG-kompatibilitet och robust ovillkorad gren. Modellen lär sig både villkorad och ovillkorad prediktion i samma nätverk, vilket möjliggör classifier-free guidance vid inferens.
 **Null Text Embedding** — Unconditional embedding för CFG unconditional branch; tränas via dropout av text conditioning.
 **Prompt Weight Syntax** — Syntax med emphasis, parentheses eller numeriska vikter för att förstärka eller dämpa delar av prompt vid inferens.
 **CLIP Score for Evaluation** — Cosine similarity CLIP(image, text) som kvalitetsproxy för prompt alignment utan mänsklig bedömning.
@@ -974,7 +974,7 @@ Denna ordlista riktar sig till dig som redan har god kunskap om AI och maskininl
 **Offset Noise** — Low-frequency bruskomponent i träning som förbättrar global luminans och färgdiversitet i genererade bilder.
 **Diffusion Model Quantization** — INT8 eller INT4 U-Net och text encoder för snabbare inferens med minimal perceptuell kvalitetsförlust via calibration.
 **Diffusion Model Compilation** — torch.compile, TensorRT eller ONNX för optimerad inference pipeline med fusion och kernel selection.
-**Stochastic Sampler** — Sampling som injicerar brus vid varje steg ger mer variation och kan förbättra diversitet jämfört med ren ODE.
+**Stochastic Sampler** — Sampling som injicerar brus vid varje steg ger mer variation och kan förbättra diversitet jämfört med ren ODE-lösning. Används när flera distinkta samples önskas från samma prompt, till skillnad från deterministiska samplers som ger mer reproducerbara resultat.
 **Deterministic Sampler** — Integrerar reverse ODE utan extra brus; reproducerbar given startseed och lämplig för reproducible benchmarks.
 
 ## Computer Vision
@@ -990,17 +990,17 @@ Denna ordlista riktar sig till dig som redan har god kunskap om AI och maskininl
 **Optical Flow** — Vektorfält som beskriver pixelrörelse mellan bildrutor; används i video analysis, action recognition och frame interpolation.
 **Single-Shot Detector** — SSD: detekterar objekt i ett enda forward pass över multi-scale feature maps utan separat proposal stage.
 **YOLO Architecture** — You Only Look Once: realtids object detection med grid-baserad prediktion och optimerad backbone för edge deployment.
-**R-CNN Family** — Region-based detectors R-CNN, Fast R-CNN, Faster R-CNN med proposal network och ROI pooling för hög precision.
+**R-CNN Family** — Regionbaserade detektorer R-CNN, Fast R-CNN och Faster R-CNN med proposal-nätverk och ROI-pooling för hög precision. Varje generation minskade inferenslatens genom att integrera proposal-generering och klassificering i ett enda nätverk.
 **Region Proposal Network** — RPN: genererar kandidat-regioner med objectness scores för two-stage detektorer som Faster R-CNN.
 **Feature Pyramid Network** — FPN: multi-scale feature pyramid med top-down pathways för objekt i varierande storlekar i samma bild.
 **Non-Maximum Suppression** — NMS: filtrerar överlappande boxes och behåller högsta score per objekt; kan utökas med soft-NMS eller class-aware varianter.
 **IoU Metric** — Intersection over Union: overlap mellan predikterad och ground truth box; grund för mAP och träningsmatcher i detection.
 **mAP** — Mean Average Precision: standardmetrik för object detection över IoU-trösklar och klasser; sammanfattar precision-recall.
-**Anchor Boxes** — Fördefinierade box-skalaer och aspect ratios som detektor regresserar offset från; dominerade före anchor-free era.
+**Anchor Boxes** — Fördefinierade box-skalaer och aspect ratios som detektor regresserar offset från; dominerade före anchor-free-eran. Kräver noggrann design av anchor-set per dataset men ger stabil träning när objektstorlekar varierar kraftigt.
 **Anchor-Free Detection** — Predicerar objektcentrum, storlek och klass direkt utan fördefinierade anchors; enklare design i FCOS och CenterNet.
-**Focal Loss** — Down-viktar lätta exempel i loss; adresserar extrem klassobalans i one-stage detectors som RetinaNet.
+**Focal Loss** — Nedviktar lätta exempel i förlustfunktionen; adresserar extrem klassobalans i one-stage-detektorer som RetinaNet. Fokuserar gradienten på svåra, felklassificerade exempel istället för att domineras av enkla bakgrundsregioner.
 **RetinaNet** — One-stage detector med FPN och focal loss för hög precision utan two-stage latency; influerade modern detection.
-**DETR** — Detection Transformer: set prediction med transformer encoder-decoder och bipartite matching utan NMS i träning.
+**DETR** — Detection Transformer: mängdprediktion med transformer encoder-decoder och bipartite matching utan NMS i träning. Förutsäger en fix mängd objekt direkt men kräver längre träningstid än traditionella CNN-detektorer.
 **Hungarian Matching in DETR** — Optimal one-to-one matchning mellan pred och GT boxes via Hungarian algorithm för set loss utan duplicate predictions.
 **Deformable DETR** — Deformable attention för effektiv multi-scale detection med färre queries och snabbare konvergens än vanilla DETR.
 **Segment Anything Model** — SAM: promptbar grundmodell för segmentering via points, boxes eller mask hints; generaliserar brett med minimal finetuning.
@@ -1026,7 +1026,7 @@ Denna ordlista riktar sig till dig som redan har god kunskap om AI och maskininl
 **OCR Pipeline** — Detektera textregioner, recognizera tecken och post-process med språkmodell för korrekt ordning och formatering.
 **Scene Text Recognition** — STR: läsa text i naturliga scenbilder med varierande font, pose, blur och bakgrund utan begränsad lexikon.
 **Document Layout Analysis** — Segmentera sidor i textblock, tabeller, figurer och rubriker för downstream parsing och RAG.
-**Table Structure Recognition** — Extraherar rader, kolumner och cellinnehåll från tabellbilder för strukturerad data export.
+**Table Structure Recognition** — Extraherar rader, kolumner och cellinnehåll från tabellbilder för strukturerad dataexport. Viktigt för dokument-AI och OCR-pipelines där tabeller måste bli maskinläsbara JSON- eller CSV-strukturer.
 **Face Recognition** — Embedding-baserad identifikation med metric learning och cosine distance i latent ansiktsrum.
 **Face Verification** — Binärt beslut om två ansiktsbilder är samma person; används i autentisering med threshold på embedding distance.
 **Liveness Detection** — Skiljer riktigt ansikte från foto, mask eller replay för anti-spoofing i biometrisk säkerhet.
@@ -1055,9 +1055,9 @@ Denna ordlista riktar sig till dig som redan har god kunskap om AI och maskininl
 **Saliency Map** — Heatmap över pixlar som påverkar prediktion mest; används för debugging och användarförtroende.
 **Calibration in Vision Models** — Predikterade sannolikheter ska matcha faktisk accuracy per confidence bin; viktigt för säkerhetskritiska system.
 **Open Images Dataset** — Storskalig multi-label detection och segmentation benchmark med miljontals annoterade bilder.
-**COCO Dataset** — Common Objects in Context: standard för detection, segmentation, keypoints och captioning med 80 klasser.
+**COCO Dataset** — Common Objects in Context: standard för detektion, segmentering, keypoints och captioning med 80 klasser. Dess benchmark-mätvärden (mAP, mask IoU) är de facto referens vid jämförelse av nya detektions- och segmenteringsmodeller.
 **Image Resolution vs Accuracy** — Tradeoff mellan input-storlek, compute, minne och task-prestanda; högre res ger detalj men quadratic cost i attention.
-**Real-Time Inference** — Optimering för video-FPS via quantization, TensorRT, pruning och mobile backbones som MobileNet.
+**Real-Time Inference** — Optimering för video-FPS via kvantisering, TensorRT, pruning och mobila backbones som MobileNet. Kräver avvägning mellan noggrannhet och latens, särskilt vid edge-deploy på kameror och robotar.
 **MobileNet Architecture** — Depthwise separable conv för effektiv mobil inferens med låg latency och begränsad strömförbrukning.
 **EfficientNet** — Compound scaling av depth, width och resolution för optimal accuracy-efficiency tradeoff vid given compute budget.
 **ONNX Export for Vision** — Portabel modell för cross-platform deployment mellan PyTorch, TensorFlow och inference engines.
@@ -1090,25 +1090,25 @@ Denna ordlista riktar sig till dig som redan har god kunskap om AI och maskininl
 **Policy Gradient** — Optimerar policy direkt genom gradient av förväntad reward med REINFORCE, actor-critic eller PPO.
 **REINFORCE** — Monte Carlo policy gradient med full episod-return och optional baseline för variance reduction.
 **Advantage Function** — A(s,a) = Q(s,a) - V(s) mäter relativ action-kvalitet jämfört med genomsnitt i state; central i actor-critic.
-**Actor-Critic** — Actor uppdaterar policy medan critic uppskattar value för lower variance gradients än ren REINFORCE.
+**Actor-Critic** — Actor uppdaterar policy medan critic uppskattar värdefunktion för gradienter med lägre varians än ren REINFORCE. Kombinerar fördelarna med policy gradient och värdebaserade metoder i en enda träningsloop.
 **A2C** — Advantage Actor-Critic: synkron parallell policy gradient med delade workers som samlar data batchvis.
 **A3C** — Asynchronous Actor-Critic med parallella workers som uppdaterar globala weights asynkront utan replay buffer.
 **PPO Clip Objective** — Clippad probability ratio r_t(θ) förhindrar för stora policy-uppdateringar och stabiliserar deep RL träning.
 **Trust Region Policy Optimization** — TRPO: begränsar KL-divergens mellan gamla och nya policyn för monotonic improvement guarantees.
-**Natural Policy Gradient** — Policy gradient med Fisher information metric för stabilare steg i policy space nära manifold.
+**Natural Policy Gradient** — Policy gradient med Fisher-informationsmetrik för stabilare steg i policy-rummet nära manifolden. Respekterar geometrin i sannolikhetsdistributioner och ger ofta mer robust konvergens än vanlig gradient ascent.
 **Soft Actor-Critic** — SAC: off-policy max-entropy RL för kontinuerliga actions med automatisk exploration via entropy bonus.
 **Deterministic Policy Gradient** — DPG för kontinuerliga actions med deterministisk policy μ(s); grund för DDPG och TD3.
 **Deep Q-Network** — DQN: Q-learning med neuralt nätverk, experience replay och target network för stabilitet på Atari och beyond.
 **Experience Replay** — Buffer av transitions som bryter temporal korrelation vid träning och möjliggör återanvändning av data.
 **Target Network** — Fryst kopia av Q-nätverk som uppdateras periodiskt eller soft update för stabila bootstrap targets.
-**Double DQN** — Decouplar action selection och evaluation för att reducera Q overestimation bias i deep Q-learning.
+**Double DQN** — Kopplar loss action-val och utvärdering för att reducera Q-overestimeringsbias i deep Q-learning. Använder huvudnätverket för val av action men målnätverket för att uppskatta dess värde, vilket stabiliserar träningen.
 **Dueling DQN** — Separerar value och advantage streams i Q-arkitektur för bättre generalisering när actions inte påverkar miljön.
 **Prioritized Experience Replay** — Sample transitions proportionellt mot TD-error magnitude för effektivare lärande från surprising events.
 **Rainbow DQN** — Kombinerar flera DQN-förbättringar som double, dueling, PER och distributional RL i en agent.
 **Multi-Agent RL** — Flera agenter lär sig samtidigt i delad miljö med interaktion som gör miljön non-stationär från varje agents perspektiv.
 **Cooperative MARL** — Agenter delar gemensamt mål och reward; kräver koordination och credit assignment mellan agenter.
 **Competitive MARL** — Zero-sum eller adversarial interaktion mellan agenter som i self-play för spel och robust policy learning.
-**Self-Play** — Agent tränar mot sig själv eller tidigare versioner; central i AlphaGo, OpenAI Five och emergent strategi.
+**Self-Play** — Agent tränar mot sig själv eller tidigare versioner; central i AlphaGo, OpenAI Five och framväxande strategi. Möjliggör supermänsklig prestation utan extern motståndare genom ständigt eskalerande utmaningar.
 **Curriculum in RL** — Progressivt svårare miljöer eller uppgifter under träning för stabilare lärande och undvikande av local optima.
 **Reward Shaping** — Extra reward-termer som guidar lärande mot önskade beteenden; risk för reward hacking om shaping är feldesignad.
 **Sparse Reward** — Reward endast vid mål; svår exploration som kräver intrinsic motivation, HER eller lång horisont planning.
@@ -1124,7 +1124,7 @@ Denna ordlista riktar sig till dig som redan har god kunskap om AI och maskininl
 **Batch RL** — Synonym till offline RL; batch av transitions från logging policy utan möjlighet att samla ny data under träning.
 **Conservative Q-Learning** — CQL: straffar Q-värden på out-of-distribution actions för att undvika overestimation i offline setting.
 **Model-Based RL** — Lär miljömodell och planerar med den via Dyna, MBPO, MuZero eller MPC för högre sample efficiency.
-**MuZero** — Lär modell implicit för planning och MCTS utan explicit rekonstruktion av full observation state.
+**MuZero** — Lär modell implicit för planering och MCTS utan explicit rekonstruktion av full observationsstate. Kombinerar modellbaserad planering med policy-gradient-lärande och nådde toppresultat i Go, schack och Atari.
 **AlphaZero** — Self-play plus MCTS plus neural policy/value network för superhuman brädspel utan mänsklig data.
 **Monte Carlo Tree Search** — MCTS: simulerar framtida spelträd med selection, expansion, simulation och backprop för action selection.
 **UCB1 in MCTS** — Selection via upper confidence bound i sökträd balanserar exploration av nya noder och exploitation av lovande grenar.
@@ -1145,11 +1145,11 @@ Denna ordlista riktar sig till dig som redan har god kunskap om AI och maskininl
 **Goal-Conditioned RL** — Policy conditionad på målstate eller goal embedding; generaliserar över tasks i samma miljö.
 **HER Hindsight Experience Replay** — Behandlar uppnådda states som surrogate goals retroactively för att lära från misslyckade episoder i sparse reward.
 **Policy Distillation** — Komprimera ensemble eller stor teacher policy till mindre student för deployment med bibehållen ungefärlig beteende.
-**World Model** — Predicerar nästa observation och reward; används för planning i latent space som i Dreamer och MBRL.
+**World Model** — Predicerar nästa observation och reward; används för planering i latent rum som i Dreamer och MBRL. Låter agenten simulera framtida trajektorier utan dyra miljöinteraktioner vid varje planeringssteg.
 **DreamerV3** — Model-based RL med latent imagination i learned world model för hög sample efficiency på diverse domains.
 **Sample Efficiency** — Antal miljöinteraktioner som krävs för given prestanda; kritiskt i robotics och dyra real-world miljöer.
 **Regret in RL** — Kumulativ skillnad mot optimal policy över tid; teoretiskt mått på online learning performance.
-**On-Policy vs Off-Policy** — On-policy tränar på data från aktuell policy; off-policy återanvänder gammal data via replay med importance sampling.
+**On-Policy vs Off-Policy** — On-policy tränar på data från aktuell policy; off-policy återanvänder gammal data via replay med importance sampling. Off-policy är mer datamässigt effektivt men kräver bias-korrigering; on-policy är enklare men sample-ineffektivt.
 **Importance Sampling in RL** — Korrigerar off-policy data med likelihood ratio mellan behavior och target policy för unbiased gradient estimates.
 **Generalized Advantage Estimation** — GAE: bias-variance tradeoff i advantage estimation via exponential averaging av TD residuals.
 **Entropy Bonus** — Regularisering som uppmuntrar utforskning i policy gradient genom att maximera policy entropy i objective.
