@@ -321,6 +321,7 @@ def main() -> int:
     root = Path(__file__).resolve().parents[1]
     source = root / "docs" / "AI_GLOSSARY.md"
     target = root / "docs" / "AI_GLOSSARY.html"
+    index_target = root / "docs" / "index.html"
 
     if not source.exists():
         print(f"Missing source file: {source}", file=sys.stderr)
@@ -328,8 +329,10 @@ def main() -> int:
 
     markdown_text = source.read_text(encoding="utf-8")
     intro, sections = parse_glossary(markdown_text)
-    target.write_text(render_html(intro, sections), encoding="utf-8")
-    print(f"Wrote {target} ({len(sections)} sections)")
+    html_output = render_html(intro, sections)
+    target.write_text(html_output, encoding="utf-8")
+    index_target.write_text(html_output, encoding="utf-8")
+    print(f"Wrote {target} and {index_target} ({len(sections)} sections)")
     return 0
 
 
