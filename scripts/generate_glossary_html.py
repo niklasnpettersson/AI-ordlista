@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import html
+import json
 import re
 import sys
 from pathlib import Path
@@ -64,6 +65,20 @@ def parse_glossary(markdown_text: str) -> tuple[str, list[tuple[str, str, list[t
 
     intro = " ".join(intro_lines)
     return intro, sections
+
+
+def sections_to_json(intro: str, sections: list[tuple[str, str, list[tuple[str, str]]]]) -> dict:
+    return {
+        "intro": intro,
+        "sections": [
+            {
+                "title": title,
+                "slug": slug,
+                "entries": [{"term": term, "explanation": explanation} for term, explanation in entries],
+            }
+            for title, slug, entries in sections
+        ],
+    }
 
 
 def render_html(intro: str, sections: list[tuple[str, str, list[tuple[str, str]]]]) -> str:
@@ -322,6 +337,7 @@ def main() -> int:
     source = root / "docs" / "AI_GLOSSARY.md"
     target = root / "docs" / "AI_GLOSSARY.html"
     index_target = root / "docs" / "index.html"
+    json_target = root / "web" / "src" / "data" / "glossary.json"
 
     if not source.exists():
         print(f"Missing source file: {source}", file=sys.stderr)
@@ -332,7 +348,15 @@ def main() -> int:
     html_output = render_html(intro, sections)
     target.write_text(html_output, encoding="utf-8")
     index_target.write_text(html_output, encoding="utf-8")
-    print(f"Wrote {target} and {index_target} ({len(sections)} sections)")
+    json_target.parent.mkdir(parents=True, exist_ok=True)
+    json_target.write_text(
+        json.dumps(sections_to_json(intro, sections), ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    print(
+        f"Wrote {target}, {index_target}, and {json_target} "
+        f"({len(sections)} sections)"
+    )
     return 0
 
 
